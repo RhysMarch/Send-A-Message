@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>From Me To You 💌</title>
+    <style>
+        :root {
+            --bg-dark: radial-gradient(circle at center, #0b1223 0%, #050816 100%);
+            --card-bg: rgba(15, 22, 40, 0.9);
+            --accent1: #6366f1;
+            --accent2: #ec4899;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg-dark);
+            color: #f5f5f5;
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 600px;
+            z-index: 5;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: clamp(1.6rem, 4vw, 2rem);
+            text-align: center;
+        }
+
+        .field-label {
+            font-size: 0.9rem;
+            color: #cbd5f5;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            border-radius: 10px;
+            border: 1px solid #27336b;
+            background: #050816;
+            color: #f5f5f5;
+            padding: 10px 12px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 12px;
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent1), var(--accent2));
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        button:hover { filter: brightness(1.05); }
+
+        .link-output {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            word-break: break-all;
+            background: #050816;
+            border-radius: 10px;
+            padding: 8px 10px;
+            border: 1px solid #27336b;
+            cursor: pointer;
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        /* Full-screen globe */
+        .globe-wrapper {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #0b1735 0%, #030b1f 100%);
+            overflow: hidden;
+        }
+
+        #globe {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Message card */
+        .message-card {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(5, 8, 22, 0.9);
+            border: 1px solid #27336b;
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            max-width: 90%;
+            display: none;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .message-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #9ca3af;
+            margin-bottom: 4px;
+        }
+
+        .message-body {
+            white-space: pre-wrap;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .skip {
+            position: absolute;
+            bottom: 4%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: #9ca3af;
+            text-decoration: underline;
+            cursor: pointer;
+            display: none;
+            z-index: 10;
+        }
+
+        /* Dancing cats */
+        .cat-gif {
+            position: absolute;
+            width: 72px;
+            max-width: 20vw;
+            pointer-events: none;
+            animation: cat-dance 1.3s ease-in-out infinite alternate;
+            z-index: 5;
+        }
+
+        @keyframes cat-dance {
+            from { transform: translateY(0) rotate(-4deg); }
+            to   { transform: translateY(-10px) rotate(4deg); }
+        }
+
+        /* Emoji hearts */
+        .emoji-burst {
+            position: absolute;
+            font-size: 1.8rem;
+            pointer-events: none;
+            animation: float-up 3s ease-out forwards;
+            opacity: 0;
+            z-index: 4;
+        }
+
+        @keyframes float-up {
+            0%   { opacity: 0; transform: translateY(20px) scale(0.8); }
+            10%  { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-70px) scale(1.3); }
+        }
+
+        @media (max-width: 600px) {
+            .message-card { font-size: 0.9rem; padding: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Create Mode -->
+    <div class="card" id="create-mode">
+        <h1>Send a Little Journey ✈️</h1>
+        <label class="field-label" for="message">Write something from the heart</label>
+        <textarea id="message" placeholder="Type your message here..."></textarea>
+        <button id="generate-btn">Generate Link</button>
+        <div id="link-output" class="link-output" style="display:none;"></div>
+        <p class="hint">
+            The site will ask for your location to show where the journey starts.
+            Copy the link and send it to them — when they open it, it’ll travel from you to wherever they are.
+        </p>
+    </div>
+
+    <!-- View Mode -->
+    <div id="view-mode" style="display:none;">
+        <div class="globe-wrapper">
+            <svg id="globe"></svg>
+            <div class="message-card" id="message-card">
+                <div class="message-label">From someone who misses you</div>
+                <div class="message-body" id="message-body"></div>
+            </div>
+            <div class="skip" id="skip-btn">Skip to message</div>
+        </div>
+    </div>
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/topojson-client@3"></script>
+
+<script>
+    // ---- helpers ----
+    function encodeMessage(s){return btoa(encodeURIComponent(s))}
+    function decodeMessage(s){try{return decodeURIComponent(atob(s))}catch{return ""}}
+    function getMessageFromUrl(){return new URLSearchParams(location.search).get("m")}
+    function getFromFromUrl(){
+        const s = new URLSearchParams(location.search).get("from");
+        if(!s) return null;
+        const parts = s.split(",");
+        if(parts.length !== 2) return null;
+        const lon = parseFloat(parts[0]);
+        const lat = parseFloat(parts[1]);
+        if(Number.isNaN(lon) || Number.isNaN(lat)) return null;
+        return [lon, lat];
+    }
+
+    // celebration: cats + emojis
+    function spawnCelebration() {
+        const wrapper = document.querySelector('.globe-wrapper');
+        if (!wrapper) return;
+
+        const catUrls = [
+            "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif",
+            "https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif",
+            "https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif",
+            "https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif",
+            "https://media.giphy.com/media/11s7Ke7jcNxCHS/giphy.gif",
+            "https://media.giphy.com/media/13CoXDiaCcCoyk/giphy.gif"
+        ];
+
+        const emojis = ["💖","💕","💞","💘","🐱","😽","💓","🌸","💗","💟","😻","🥹"];
+
+        const catCount = 20;
+        const emojiCount = 40;
+
+        // cats with staggered spawn
+        for (let i = 0; i < catCount; i++) {
+            const delay = Math.random() * 2000;
+            setTimeout(() => {
+                const img = document.createElement('img');
+                img.src = catUrls[i % catUrls.length];
+                img.className = 'cat-gif';
+                img.style.left = (Math.random()*80 + 10) + "%";
+                img.style.top  = (Math.random()*60 + 10) + "%";
+                wrapper.appendChild(img);
+                setTimeout(() => img.remove(), 8000);
+            }, delay);
+        }
+
+        // emojis with staggered spawn
+        for (let i = 0; i < emojiCount; i++) {
+            const delay = Math.random() * 2500;
+            setTimeout(() => {
+                const span = document.createElement('span');
+                span.className = 'emoji-burst';
+                span.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+                span.style.left = (Math.random()*80 + 10) + "%";
+                span.style.top  = (Math.random()*50 + 30) + "%";
+                wrapper.appendChild(span);
+                setTimeout(() => span.remove(), 3500);
+            }, delay);
+        }
+    }
+
+    // from & to are [lon, lat]
+    function setupGlobeAndFlight(from, to, onDone){
+        const svg=d3.select("#globe");
+        const width=window.innerWidth, height=window.innerHeight;
+        svg.attr("viewBox",`0 0 ${width} ${height}`);
+
+        const projection=d3.geoOrthographic().scale(height/2.4).translate([width/2,height/2]).clipAngle(90);
+        const path=d3.geoPath(projection), graticule=d3.geoGraticule();
+        const interpolate=d3.geoInterpolate(from, to);
+
+        d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(world=>{
+            const countries=topojson.feature(world,world.objects.countries);
+            const ocean=svg.append("path").datum({type:"Sphere"}).attr("fill","#10325f");
+            const grat=svg.append("path").datum(graticule()).attr("fill","none").attr("stroke","#456a9a").attr("stroke-width",0.5).attr("opacity",0.4);
+            const land=svg.append("g").selectAll("path").data(countries.features).enter().append("path")
+                .attr("fill","#dfe7f9").attr("stroke","#334155").attr("stroke-width",0.6);
+
+            const arcLine=svg.append("path").attr("fill","none").attr("stroke","#f472b6")
+                .attr("stroke-width",2).attr("stroke-linecap","round").attr("opacity",0.9);
+
+            const defs=svg.append("defs"),glow=defs.append("filter").attr("id","glow");
+            glow.append("feGaussianBlur").attr("stdDeviation","3").attr("result","blur");
+            const merge=glow.append("feMerge");
+            merge.append("feMergeNode").attr("in","blur");merge.append("feMergeNode").attr("in","SourceGraphic");
+
+            const letter=svg.append("circle").attr("r",6).attr("fill","#f9a8d4").attr("stroke","#fecaca")
+                .attr("stroke-width",1.5).attr("filter","url(#glow)");
+
+            const fromDot=svg.append("circle").attr("r",5).attr("fill","#60a5fa");
+            const toDot=svg.append("circle").attr("r",5).attr("fill","#fb7185");
+
+            function renderBase(){
+                ocean.attr("d",path);
+                grat.attr("d",path);
+                land.attr("d",path);
+                const fromP=projection(from), toP=projection(to);
+                if(fromP){fromDot.attr("cx",fromP[0]).attr("cy",fromP[1]);}
+                if(toP){toDot.attr("cx",toP[0]).attr("cy",toP[1]);}
+            }
+            renderBase();
+
+            const duration=7000,start=Date.now();let done=false;
+
+            // precompute curved lon/lat path
+            const coords=d3.range(0,1.01,0.02).map(t=>{
+                const [lon,lat]=interpolate(t);
+                const curve=Math.sin(Math.PI*t)*8;
+                return [lon,lat+curve];
+            });
+            const line={type:"LineString",coordinates:coords};
+            arcLine.attr("d",path(line));
+            const total=arcLine.node().getTotalLength();
+            arcLine.attr("stroke-dasharray",`${total} ${total}`)
+                .attr("stroke-dashoffset",total)
+                .transition()
+                .duration(duration*0.8)
+                .ease(d3.easeCubicOut)
+                .attr("stroke-dashoffset",0);
+
+            d3.timer(()=>{
+                const t=Math.min(1,(Date.now()-start)/duration);
+                const [lonBase,latBase]=interpolate(t);
+                const curve=Math.sin(Math.PI*t)*8;
+                const lat=latBase+curve;
+
+                // rotate camera so great-circle stays central-ish
+                projection.rotate([-lonBase,-latBase]);
+                renderBase();
+                arcLine.attr("d",path(line)); // re-project path each frame
+
+                const pos=projection([lonBase,lat]);
+                if(pos)letter.attr("cx",pos[0]).attr("cy",pos[1]);
+
+                if(t>=1&&!done){
+                    done=true;
+                    onDone&&onDone();
+                    return true;
+                }
+            });
+        }).catch(e=>{console.error(e);onDone&&onDone();});
+    }
+
+    // ---- mode logic ----
+    const rawMsg = getMessageFromUrl();
+    const fromParam = getFromFromUrl();
+    const create = document.getElementById("create-mode");
+    const view = document.getElementById("view-mode");
+
+    if(rawMsg){
+        // VIEW MODE (receiver)
+        create.style.display="none";view.style.display="block";
+
+        const msgEl=document.getElementById("message-body");
+        const card=document.getElementById("message-card");
+        const skip=document.getElementById("skip-btn");
+        msgEl.textContent = decodeMessage(rawMsg) || "This message could not be loaded.";
+
+        let revealed=false;
+        function reveal(){
+            if(revealed) return;
+            revealed=true;
+            card.style.display="block";
+            skip.style.display="none";
+            spawnCelebration();
+        }
+
+        // Get receiver location
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const to = [pos.coords.longitude, pos.coords.latitude];
+                    const from = fromParam || to; // if sender didn't provide, use same
+                    setupGlobeAndFlight(from, to, reveal);
+                },
+                err => {
+                    console.warn("Geolocation failed:", err);
+                    // If we at least have sender coords, animate a small arc near them
+                    if (fromParam) {
+                        const from = fromParam;
+                        const to = [from[0] + 20, from[1]]; // arbitrary offset
+                        setupGlobeAndFlight(from, to, reveal);
+                    } else {
+                        // Can't do fun globe stuff, just show the message
+                        reveal();
+                    }
+                }
+            );
+        } else {
+            // No geolocation support
+            reveal();
+        }
+
+        setTimeout(()=>{
+            if(!revealed){
+                skip.style.display="block";
+                skip.onclick=reveal;
+            }
+        },2500);
+
+    } else {
+        // CREATE MODE (sender)
+        const btn=document.getElementById("generate-btn"),
+            ta=document.getElementById("message"),
+            out=document.getElementById("link-output");
+
+        function makeUrl(msg, fromCoordStr){
+            const base=location.href.split("?")[0];
+            const params = new URLSearchParams();
+            params.set("m", encodeMessage(msg));
+            if (fromCoordStr) params.set("from", fromCoordStr);
+            const url = `${base}?${params.toString()}`;
+
+            out.style.display="block";
+            out.textContent=url;
+            out.onclick=()=>{
+                navigator.clipboard?.writeText(url).catch(()=>{});
+                alert("Copied link to clipboard!");
+            };
+        }
+
+        btn.onclick=()=>{
+            const msg=ta.value.trim();
+            if(!msg) return alert("Write something first :)");
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        const lon = pos.coords.longitude.toFixed(4);
+                        const lat = pos.coords.latitude.toFixed(4);
+                        makeUrl(msg, `${lon},${lat}`);
+                    },
+                    err => {
+                        console.warn("Geolocation failed:", err);
+                        makeUrl(msg, null); // still works, just no dynamic start
+                    }
+                );
+            } else {
+                makeUrl(msg, null);
+            }
+        };
+    }
+</script>
+</body>
+</html>
